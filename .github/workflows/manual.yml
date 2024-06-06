@@ -28,7 +28,7 @@ jobs:
         echo "AWS_SECRET_ACCESS_KEY=${{ secrets.SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
 
     - name: Terraform Init
-      run: terraform init
+      run: terraform init -backend-config=backend.hcl
       working-directory: ./infrastructure
 
     - name: Terraform Plan
