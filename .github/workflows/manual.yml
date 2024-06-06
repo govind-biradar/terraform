@@ -8,6 +8,13 @@ on:
         required: true
         default: 'no'
         type: string
+      destroy_plan:
+        description: 'Would you like to terraform destroy? (yes/no)'
+        required: true
+        default: 'no'
+        type: string
+  
+
 
 jobs:
   terraform:
@@ -38,4 +45,9 @@ jobs:
     - name: Terraform Apply
       if: ${{ inputs.apply_plan == 'yes' }}
       run: terraform apply -auto-approve
+      working-directory: ./infrastructure
+
+    - name: Terraform destroy
+      if: ${{ inputs.destroy_plan == 'yes' }}
+      run: terraform destroy -backend-config=backend.hcl
       working-directory: ./infrastructure
