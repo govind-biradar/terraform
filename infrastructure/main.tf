@@ -6,10 +6,9 @@ terraform {
     }
   }
 
+ 
   backend "s3" {
-    bucket = "s3-terraform-git-bucket"
-    key    = "terraform.tfstate"
-    region = "us-east-1"
+    
   }
 
   required_version = ">= 1.2.0"
