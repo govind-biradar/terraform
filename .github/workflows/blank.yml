@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: your-aws-region
+      AWS_REGION: us-east-1
 
     steps:
       # Checkout the code
@@ -34,7 +34,7 @@ jobs:
 
       # Terraform Init
       - name: Terraform Init
-        run: terraform init
+        run: terraform init -backend-config= backend.hcl
 
       # Terraform Validate
       - name: Terraform Validate
@@ -42,9 +42,9 @@ jobs:
 
       # Terraform Plan
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: terraform plan 
 
       # Optional: Terraform Apply (requires manual approval)
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
-        run: terraform apply tfplan
+        run: terraform apply 
