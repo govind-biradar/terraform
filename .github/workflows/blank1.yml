@@ -1,10 +1,16 @@
 name: Terraform Workflow
 
 on:
-  push:
-    branches:
-      - main  # Trigger on push to the main branch
-  workflow_dispatch:  # Allow manual triggering of the workflow
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Choose an action (apply or destroy)"
+        required: true
+        default: "plan"
+        type: choice
+        options:
+          - yes 
+          - no
 
 jobs:
   terraform:
@@ -23,7 +29,7 @@ jobs:
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: latest
-
+          
       # Configure AWS credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v3
@@ -42,28 +48,13 @@ jobs:
 
       # Terraform Plan
       - name: Terraform Plan
-        run: terraform plan 
-        id: plan
+        run: terraform plan
 
-      # Manual Approval for Apply
-      - name: Wait for Approval before Apply
-        if: github.event_name == 'workflow_dispatch'  # This allows triggering manually
-        run: echo "Waiting for approval to apply changes."
-        continue-on-error: true
-
-      # Terraform Apply
-      - name: Terraform Apply
-        if: github.event_name == 'workflow_dispatch' && needs.approve_apply.outputs.approved == 'true'
+      # Conditional Apply or Destroy
+      - name: Execute Terraform Action
+        if: ${{ github.event.inputs.action == 'yes' }}
         run: terraform apply -auto-approve
-        id: apply
 
-      # Terraform Destroy - This requires approval before applying destroy
-      - name: Terraform Destroy
-        if: github.event_name == 'workflow_dispatch' && needs.approve_destroy.outputs.approved == 'true'
+      - name: Execute Terraform Destroy
+        if: ${{ github.event.inputs.action == 'yes' }}
         run: terraform destroy -auto-approve
-
-      # Optional approval for Destroy
-      - name: Wait for Approval before Destroy
-        if: github.event_name == 'workflow_dispatch'  # This allows triggering manually
-        run: echo "Waiting for approval to destroy infrastructure."
-        continue-on-error: true
