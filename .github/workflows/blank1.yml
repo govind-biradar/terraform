@@ -3,14 +3,10 @@ name: Terraform Workflow
 on:
   workflow_dispatch:
     inputs:
-      action:
-        description: "Choose an action (apply or destroy)"
+      approve_action:
+        description: "Do you want to apply the changes? (yes/no)"
         required: true
-        default: "plan"
-        type: choice
-        options:
-          - yes 
-          - no
+        default: "no"
 
 jobs:
   terraform:
@@ -50,11 +46,12 @@ jobs:
       - name: Terraform Plan
         run: terraform plan
 
-      # Conditional Apply or Destroy
-      - name: Execute Terraform Action
-        if: ${{ github.event.inputs.action == 'yes' }}
+      # Conditional Apply
+      - name: Terraform Apply
+        if: ${{ github.event.inputs.approve_action == 'yes' }}
         run: terraform apply -auto-approve
 
-      - name: Execute Terraform Destroy
-        if: ${{ github.event.inputs.action == 'yes' }}
+      # Conditional Destroy
+      - name: Terraform Destroy
+        if: ${{ github.event.inputs.approve_action == 'yes' }}
         run: terraform destroy -auto-approve
