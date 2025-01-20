@@ -1,0 +1,69 @@
+name: Terraform Workflow
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the main branch
+  workflow_dispatch:  # Allow manual triggering of the workflow
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+
+    steps:
+      # Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Setup Terraform CLI
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+
+      # Configure AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Terraform Init
+      - name: Terraform Init
+        run: terraform init -backend-config=backend.hcl
+
+      # Terraform Validate
+      - name: Terraform Validate
+        run: terraform validate
+
+      # Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan 
+        id: plan
+
+      # Manual Approval for Apply
+      - name: Wait for Approval before Apply
+        if: github.event_name == 'workflow_dispatch'  # This allows triggering manually
+        run: echo "Waiting for approval to apply changes."
+        continue-on-error: true
+
+      # Terraform Apply
+      - name: Terraform Apply
+        if: github.event_name == 'workflow_dispatch' && needs.approve_apply.outputs.approved == 'true'
+        run: terraform apply -auto-approve
+        id: apply
+
+      # Terraform Destroy - This requires approval before applying destroy
+      - name: Terraform Destroy
+        if: github.event_name == 'workflow_dispatch' && needs.approve_destroy.outputs.approved == 'true'
+        run: terraform destroy -auto-approve
+
+      # Optional approval for Destroy
+      - name: Wait for Approval before Destroy
+        if: github.event_name == 'workflow_dispatch'  # This allows triggering manually
+        run: echo "Waiting for approval to destroy infrastructure."
+        continue-on-error: true
