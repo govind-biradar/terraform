@@ -46,8 +46,10 @@ jobs:
 
       # Optional: Terraform Apply (requires manual approval)
       - name: Terraform Apply
-        run: terraform apply 
+        run: terraform apply -auto-approve
+
 
       # Terraform destroy
       - name: Terraform destroy
-        run: terraform destroy
+        run: terraform destroy -auto-approve
+
