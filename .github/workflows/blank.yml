@@ -46,5 +46,8 @@ jobs:
 
       # Optional: Terraform Apply (requires manual approval)
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
         run: terraform apply 
+
+      # Terraform destroy
+      - name: Terraform destroy
+        run: terraform destroy
